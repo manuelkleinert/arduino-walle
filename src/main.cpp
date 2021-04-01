@@ -5,7 +5,6 @@
 int backA = 12;
 int backB = 13;
 
-
 Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver();
 
 #define SERVOMIN  150 // This is the 'minimum' pulse length count (out of 4096)
@@ -29,11 +28,23 @@ void setup() {
   pwm.setOscillatorFrequency(27000000);
   pwm.setPWMFreq(SERVO_FREQ);  // Analog servos run at ~50 Hz updates
 
-  delay(10);
+  pwm.setPWM(12, 0, 300);
+  pwm.setPWM(13, 0, 300);
 }
 
 void loop() {
-   // Drive each servo one at a time using setPWM()
+
+  pwm.setPWM(12, 0, 300);
+  pwm.setPWM(13, 0, 300);
+
+  delay(5000);
+
+  pwm.setPWM(12, 0, 400);
+  pwm.setPWM(13, 0, 200);
+
+  delay(5000);
+
+/*    // Drive each servo one at a time using setPWM()
   Serial.println(servonum);
   for (uint16_t pulselen = SERVOMIN; pulselen < SERVOMAX; pulselen++) {
     pwm.setPWM(servonum, 0, pulselen);
@@ -61,7 +72,7 @@ void loop() {
 
   servonum++;
   if (servonum > 12) servonum = 0; // Testing the first 8 servo channels
-
+ */
 
   // forward @ full speed
   // digitalWrite(mm, HIGH); //Establishes forward direction of Channel A
