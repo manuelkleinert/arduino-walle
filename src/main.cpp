@@ -48,19 +48,27 @@ boolean readSerial() {
 
     readString = "";
     while (Serial.available()) {
-      // delay(1);  //delay to allow byte to arrive in input buffer
-      readString += (char) Serial.read();
+      delay(2);  //delay to allow byte to arrive in input buffer
+      // readString += (char) Serial.read();
+      readString += Serial.readString();
     }
+
+    Serial.println("Arduino Serial: START::::");
+    Serial.println(readString);
+    Serial.println(" ::: END");
     
     DeserializationError error = deserializeJson(doc, readString);
 
     switch (error.code()) {
       case DeserializationError::Ok:
-          int pin = doc["sPin"];
-          int position = doc["Pos"];
-          int speed = doc["Speed"];
-          servoTargetPositionArray[pin] = position ? position : 300;
-          servoSpeedArray[pin] = speed ? speed: 1;
+          Serial.println("OK <<<<<<<<<<<<<<<<<<<<<<<<");
+          String test = doc["servos"];
+          Serial.println(test);
+          // int pin = doc["sPin"];
+          // int position = doc["Pos"];
+          // int speed = doc["Speed"];
+          // servoTargetPositionArray[pin] = position ? position : 300;
+          // servoSpeedArray[pin] = speed ? speed: 1;
           return true;
           break;
       case DeserializationError::InvalidInput:
@@ -122,7 +130,7 @@ void setup() {
 }
 
 void loop() {
-  setServos();
+  // setServos();
   readSerial();
 
   // pwm.setPWM(12, 0, 300);
