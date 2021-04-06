@@ -10,8 +10,24 @@ int servoDefault = 300;
 int servoMax = 500;
 int servoMin = 100;
 
-int servoMinArray[16] = {100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100};
-int servoMaxArray[16] = {500, 500, 500, 500, 500, 500, 500, 500, 500, 500, 500, 500, 500, 500, 500, 500};
+/*
+  Servos:
+  0 - Arm R
+  1 - Arm L
+
+  4 - Neck down
+  5 - Neck middle
+  6 - Turn Head
+
+  8 - Eye right
+  9 - Eye left
+
+  12 - Front flap
+
+                          0    1    2    3    4    5    6    7    8    9    10   11   12   13   14   15
+*/
+int servoMinArray[16] = {100, 100, 100, 100, 150, 140, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100};
+int servoMaxArray[16] = {500, 500, 500, 500, 500, 420, 500, 500, 500, 500, 500, 500, 500, 500, 500, 500};
 
 int servoPositionArray[16] = {300, 300, 300, 300, 300, 300, 300, 300, 300, 300, 300, 300, 300, 300, 300, 300};
 int servoTargetPositionArray[16] = {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1};
@@ -96,7 +112,7 @@ void setup() {
 
   pwm.begin();
   pwm.setOscillatorFrequency(27000000);
-  pwm.setPWMFreq(50);
+  pwm.setPWMFreq(60);
 
   setServos();
 
