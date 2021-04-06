@@ -6,82 +6,108 @@
 int backA = 12;
 int backB = 13;
 
-int servoDefault = 0;
-int servoMax = 540;
-int servoMin = 50;
+int servoDefault = 300;
+int servoMax = 500;
+int servoMin = 100;
+
+int servoMinArray[16] = {100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100};
+int servoMaxArray[16] = {500, 500, 500, 500, 500, 500, 500, 500, 500, 500, 500, 500, 500, 500, 500, 500};
+
+int servoPositionArray[16] = {300, 300, 300, 300, 300, 300, 300, 300, 300, 300, 300, 300, 300, 300, 300, 300};
+int servoTargetPositionArray[16] = {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1};
+
+int servoSpeedArray[16] = {};
 
 Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver();
+DeserializationError error;
 
-#define SERVOMIN  150 // This is the 'minimum' pulse length count (out of 4096)
-#define SERVOMAX  600 // This is the 'maximum' pulse length count (out of 4096)
-#define USMIN  600 // This is the rounded 'minimum' microsecond length based on the minimum pulse of 150
-#define USMAX  2400 // This is the rounded 'maximum' microsecond length based on the maximum pulse of 600
-#define SERVO_FREQ 50 // Analog servos run at ~50 Hz updates
+DynamicJsonDocument doc(1024);
+String readString;
 
 // our servo # counter
 uint8_t servonum = 0;
 
-String incomingString = "";
+boolean readSerial() {
+  if (Serial.available()) {
 
-DynamicJsonDocument doc(1024);
+    readString = "";
+    while (Serial.available()) {
+      // delay(1);  //delay to allow byte to arrive in input buffer
+      readString += (char) Serial.read();
+    }
+    
+    DeserializationError error = deserializeJson(doc, readString);
+
+    switch (error.code()) {
+      case DeserializationError::Ok:
+          int pin = doc["sPin"];
+          int position = doc["Pos"];
+          int speed = doc["Speed"];
+          servoTargetPositionArray[pin] = position ? position : 300;
+          servoSpeedArray[pin] = speed ? speed: 1;
+          return true;
+          break;
+      case DeserializationError::InvalidInput:
+          Serial.print("Invalid input!");
+          break;
+      case DeserializationError::NoMemory:
+          Serial.print("Not enough memory");
+          break;
+      default:
+          Serial.print("Deserialization failed");
+          break;
+    }
+  }
+
+  return false;
+}
+
+void setServos() {
+  for (int i = 0; i < 16; i++) {
+    if(servoTargetPositionArray[i] == servoPositionArray[i]) {
+      continue;
+    }
+
+    if ((servoMaxArray[i] <= servoPositionArray[i] && servoTargetPositionArray[i] >= servoMaxArray[i]) 
+    || (servoMinArray[i] >= servoPositionArray[i] && servoTargetPositionArray[i] <= servoMinArray[i])) {
+      continue;
+    }
+
+    if (servoPositionArray[i] < servoTargetPositionArray[i]) {
+      servoPositionArray[i] += servoSpeedArray[i];
+    } else {
+      servoPositionArray[i] -= servoSpeedArray[i];
+    }
+    pwm.setPWM(i, 0, servoPositionArray[i]);
+  }
+}
 
 void setup() {
   Serial.begin(115200);
+  Serial.setTimeout(1);
+  while (!Serial) continue;
 
-  pinMode (backA, OUTPUT);
-  pinMode (backB, OUTPUT);
+  pinMode(backA, OUTPUT);
+  pinMode(backB, OUTPUT);
 
-  digitalWrite (backA, HIGH);
-  digitalWrite (backB, LOW);
+  // Motor direction
+  digitalWrite(backA, HIGH);
+  digitalWrite(backB, LOW);
 
   pwm.begin();
-
   pwm.setOscillatorFrequency(27000000);
-  pwm.setPWMFreq(SERVO_FREQ);  // Analog servos run at ~50 Hz updates
+  pwm.setPWMFreq(50);
 
-  pwm.setPWM(4, 0, 300);
-  pwm.setPWM(5, 0, 300);
-
-  pwm.setPWM(6, 0, 300);
-  pwm.setPWM(7, 0, 300);
+  setServos();
 
   Serial.println("<Arduino is ready>");
-
   delay(500);
+  Serial.flush();
 }
 
 void loop() {
-  Serial.print(".");
-
-   // send data only when you receive data:
-  if (Serial.available()) {
-    // read the incoming byte:
-    incomingString = "";
-    while(Serial.available())
-    {
-      incomingString+= String((char)Serial.read());
-    }
-
-    // say what you got:
-    Serial.print("START:: ");
-    Serial.print(incomingString);
-
-    deserializeJson(doc, incomingString);
-    JsonObject obj = doc.as<JsonObject>();
-    int servoId = obj["Servo"];
-    int position = obj["Pos"];
-
-    Serial.println(" ::END");
-    Serial.flush();
-
-    if (servoMax >= position and servoMin <= position) {
-      pwm.setPWM(servoId, 0, position);
-    }
-  } else {
-    Serial.println("Serial Available false");
-  }
-
-  delay(200);
+  setServos();
+  readSerial();
 
   // pwm.setPWM(12, 0, 300);
   // pwm.setPWM(13, 0, 300);
