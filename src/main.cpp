@@ -48,9 +48,18 @@ boolean readSerial() {
 
     readString = "";
     while (Serial.available()) {
-      delay(2);  //delay to allow byte to arrive in input buffer
-      // readString += (char) Serial.read();
-      readString += Serial.readString();
+      // delay(1);  //delay to allow byte to arrive in input buffer
+      readString += (char) Serial.read();
+
+      Serial.println("====");
+      Serial.println(readString);
+      Serial.println("====");
+
+
+      // Serial.println(Serial.readString());
+
+      // readString += Serial.readString();
+      // Serial.println(readString);
     }
 
     Serial.println("Arduino Serial: START::::");
