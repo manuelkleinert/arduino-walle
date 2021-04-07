@@ -35,7 +35,7 @@ int servoTargetPositionArray[16] = {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1};
 int servoSpeedArray[16] = {};
 
 Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver();
-DeserializationError error;
+DeserializationError err;
 
 DynamicJsonDocument doc(1024);
 String readString;
@@ -45,43 +45,28 @@ uint8_t servonum = 0;
 
 boolean readSerial() {
   if (Serial.available()) {
+     Serial.println("Read Arduino OK");
 
     readString = "";
+
     while (Serial.available()) {
-      // delay(1);  //delay to allow byte to arrive in input buffer
-      
       readString += Serial.readStringUntil('\n');
-      // readString += (char) Serial.read();
-
-      //readString += Serial.readString();
-
-      // Serial.println("====");
-      // Serial.println(readString);
-      // Serial.println("====");
-
-
-      // Serial.println(Serial.readString());
-
-      // readString += Serial.readString();
-      // Serial.println(readString);
     }
 
     Serial.println("Arduino Serial: START::::");
-    Serial.println(readString);
-    Serial.println(" ::: END");
-    
-    DeserializationError error = deserializeJson(doc, readString);
+    Serial.print(readString);
 
-    switch (error.code()) {
+    Serial.println(" ::: END");
+    err = deserializeJson(doc, readString);
+
+    switch (err.code()) {
       case DeserializationError::Ok:
-          Serial.println("OK <<<<<<<<<<<<<<<<<<<<<<<<");
-          String test = doc["servos"];
-          Serial.println(test);
-          // int pin = doc["sPin"];
-          // int position = doc["Pos"];
-          // int speed = doc["Speed"];
-          // servoTargetPositionArray[pin] = position ? position : 300;
-          // servoSpeedArray[pin] = speed ? speed: 1;
+          Serial.println("OK");
+          int pin = doc["pin"];
+          int position = doc["pos"];
+          int speed = doc["speed"];
+          servoTargetPositionArray[pin] = position ? position : 300;
+          servoSpeedArray[pin] = speed ? speed: 1;
           return true;
           break;
       case DeserializationError::InvalidInput:
@@ -121,7 +106,7 @@ void setServos() {
 
 void setup() {
   Serial.begin(115200);
-  Serial.setTimeout(1);
+  Serial.setTimeout(10);
   while (!Serial) continue;
 
   pinMode(backA, OUTPUT);
@@ -143,7 +128,7 @@ void setup() {
 }
 
 void loop() {
-  // setServos();
+  setServos();
   readSerial();
 
   // pwm.setPWM(12, 0, 300);
