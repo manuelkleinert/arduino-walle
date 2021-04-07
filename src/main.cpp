@@ -49,11 +49,15 @@ boolean readSerial() {
     readString = "";
     while (Serial.available()) {
       // delay(1);  //delay to allow byte to arrive in input buffer
-      readString += (char) Serial.read();
+      
+      readString += Serial.readStringUntil('\n');
+      // readString += (char) Serial.read();
 
-      Serial.println("====");
-      Serial.println(readString);
-      Serial.println("====");
+      //readString += Serial.readString();
+
+      // Serial.println("====");
+      // Serial.println(readString);
+      // Serial.println("====");
 
 
       // Serial.println(Serial.readString());
@@ -117,7 +121,7 @@ void setServos() {
 
 void setup() {
   Serial.begin(115200);
-  Serial.setTimeout(1000);
+  Serial.setTimeout(1);
   while (!Serial) continue;
 
   pinMode(backA, OUTPUT);
