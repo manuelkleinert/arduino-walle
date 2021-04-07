@@ -108,7 +108,7 @@ void setServos() {
 
 void setup() {
   Serial.begin(115200);
-  Serial.setTimeout(10);
+  Serial.setTimeout(1000);
   while (!Serial) continue;
 
   pinMode(backA, OUTPUT);
