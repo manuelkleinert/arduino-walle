@@ -24,15 +24,15 @@ int servoMin = 100;
 
   12 - Front flap
 
-                          0    1    2    3    4    5    6    7    8    9    10   11   12   13   14   15
+                                     0    1    2    3    4    5    6    7    8    9    10   11   12   13   14   15
 */
-int servoMinArray[16] = {100, 100, 100, 100, 150, 140, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100};
-int servoMaxArray[16] = {500, 500, 500, 500, 500, 420, 500, 500, 500, 500, 500, 500, 500, 500, 500, 500};
+int servoMinArray[16]            = {100, 100, 100, 100, 150, 140,  50, 100, 200, 200, 100, 100, 100, 100, 100, 100};
+int servoMaxArray[16]            = {500, 500, 500, 500, 500, 420, 500, 500, 400, 400, 500, 500, 500, 500, 500, 500};
 
-int servoPositionArray[16] = {300, 300, 300, 300, 300, 300, 300, 300, 300, 300, 300, 300, 300, 300, 300, 300};
-int servoTargetPositionArray[16] = {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1};
+int servoPositionArray[16]       = {300, 300, 300, 300, 300, 300, 300, 300, 300, 300, 300, 300, 300, 300, 300, 300};
+int servoTargetPositionArray[16] = {300, 300, 300, 300, 100, 100, 270, 300, 300, 300, 300, 300, 300, 300, 300, 300};
 
-int servoSpeedArray[16] = {};
+float servoSpeedArray[16] = {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1};
 
 Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver();
 DeserializationError err;
@@ -45,38 +45,31 @@ uint8_t servonum = 0;
 
 boolean readSerial() {
   if (Serial.available()) {
-     Serial.println("Read Arduino OK");
-
     readString = "";
 
     while (Serial.available()) {
       readString += Serial.readStringUntil('\n');
     }
 
-    Serial.println("Arduino Serial: START::::");
-    Serial.print(readString);
-
-    Serial.println(" ::: END");
     err = deserializeJson(doc, readString);
 
     switch (err.code()) {
       case DeserializationError::Ok:
-          Serial.println("OK");
-          int pin = doc["pin"];
-          int position = doc["pos"];
-          int speed = doc["speed"];
+          int pin = (int)doc["pin"];
+          int position = (int)doc["pos"];
+          float speed = (float)doc["speed"];
           servoTargetPositionArray[pin] = position ? position : 300;
           servoSpeedArray[pin] = speed ? speed: 1;
           return true;
           break;
       case DeserializationError::InvalidInput:
-          Serial.print("Invalid input!");
+          Serial.print("!!! Invalid input!");
           break;
       case DeserializationError::NoMemory:
-          Serial.print("Not enough memory");
+          Serial.print("!!! Not enough memory");
           break;
       default:
-          Serial.print("Deserialization failed");
+          Serial.print("!!! Deserialization failed");
           break;
     }
   }
@@ -86,20 +79,17 @@ boolean readSerial() {
 
 void setServos() {
   for (int i = 0; i < 16; i++) {
-    if(servoTargetPositionArray[i] == servoPositionArray[i]) {
-      continue;
+
+    if (servoTargetPositionArray[i] != servoPositionArray[i] &&
+      (servoMaxArray[i] >= servoPositionArray[i] || servoMaxArray[i] >= servoTargetPositionArray[i]) 
+       && (servoMinArray[i] <= servoPositionArray[i] || servoMinArray[i] <= servoTargetPositionArray[i])) {
+      if (servoPositionArray[i] < servoTargetPositionArray[i]) {
+        servoPositionArray[i] = (int) (servoPositionArray[i] + servoSpeedArray[i]);
+      } else {
+        servoPositionArray[i] = (int) (servoPositionArray[i] - servoSpeedArray[i]);
+      }
     }
 
-    if ((servoMaxArray[i] <= servoPositionArray[i] && servoTargetPositionArray[i] >= servoMaxArray[i]) 
-    || (servoMinArray[i] >= servoPositionArray[i] && servoTargetPositionArray[i] <= servoMinArray[i])) {
-      continue;
-    }
-
-    if (servoPositionArray[i] < servoTargetPositionArray[i]) {
-      servoPositionArray[i] += servoSpeedArray[i];
-    } else {
-      servoPositionArray[i] -= servoSpeedArray[i];
-    }
     pwm.setPWM(i, 0, servoPositionArray[i]);
   }
 }
@@ -118,12 +108,14 @@ void setup() {
 
   pwm.begin();
   pwm.setOscillatorFrequency(27000000);
-  pwm.setPWMFreq(60);
+  pwm.setPWMFreq(50);
 
-  setServos();
-
-  Serial.println("<Arduino is ready>");
+  
   delay(500);
+  setServos();
+  delay(500);
+
+  Serial.println("<Wall-E is ready>");
   Serial.flush();
 }
 
