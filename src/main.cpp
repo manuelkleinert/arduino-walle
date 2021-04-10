@@ -117,6 +117,9 @@ void setMotor() {
     analogWrite(3, motorSpeed[0]);
     analogWrite(11, motorSpeed[1]);
     motorDelayIndex --;
+  } else {
+    analogWrite(3, 0);
+    analogWrite(11, 0);
   }
 }
 
@@ -149,109 +152,4 @@ void loop() {
   setServos();
   readSerial();
   setMotor();
-
-  // Drive each servo one at a time using writeMicroseconds(), it's not precise due to calculation rounding!
-  // The writeMicroseconds() function is used to mimic the Arduino Servo library writeMicroseconds() behavior. 
-  // for (uint16_t microsec = USMIN; microsec < USMAX; microsec++) {
-  //   pwm.writeMicroseconds(servonum, microsec);
-  // }
-
-  // delay(500);
-  // for (uint16_t microsec = USMAX; microsec > USMIN; microsec--) {
-  //   pwm.writeMicroseconds(servonum, microsec);
-  // }
-
-
-  // forward @ full speed
-  // digitalWrite(mm, HIGH); //Establishes forward direction of Channel A
-  // digitalWrite(mb, LOW);   //Disengage the Brake for Channel A
-  // analogWrite(3, 255);   //Spins the motor on Channel A at full speed
-  
-  // delay(3000);
-  
-
-  // delay(1000);
-  
-  // digitalWrite(backA, HIGH);
-  // digitalWrite(backB, LOW);
-
-  // analogWrite(3, 120);   //Spins the motor on Channel A at half speed
-  // analogWrite(11, 120);
-  
-  // delay(200);
-
-  // digitalWrite(backB, HIGH);
-  // digitalWrite(backA, LOW);
-
-  // analogWrite(3, 120);   //Spins the motor on Channel A at half speed
-  // analogWrite(11, 120);
-  
-  // delay(200);
-
-  //   digitalWrite(backA, HIGH);
-  // digitalWrite(backB, LOW);
-
-  // analogWrite(3, 120);   //Spins the motor on Channel A at half speed
-  // analogWrite(11, 120);
-  
-  // delay(200);
-
-  // digitalWrite(backB, HIGH);
-  // digitalWrite(backA, LOW);
-
-  // analogWrite(3, 120);   //Spins the motor on Channel A at half speed
-  // analogWrite(11, 120);
-  
-  // delay(200);
-
-  // digitalWrite(backA, HIGH);
-  // digitalWrite(backB, LOW);
-
-  // analogWrite(3, 120);   //Spins the motor on Channel A at half speed
-  // analogWrite(11, 120);
-  
-  // delay(200);
-
-  // digitalWrite(backB, HIGH);
-  // digitalWrite(backA, LOW);
-
-  // analogWrite(3, 120);   //Spins the motor on Channel A at half speed
-  // analogWrite(11, 120);
-  
-  // delay(200);
- 
-  // analogWrite(3, 0);
-  // analogWrite(11, 0); 
-  
-  // delay(1000);
-
-  // digitalWrite(backB, LOW);
-  // digitalWrite(backA, LOW);
-
-  // analogWrite(3, 120);
-  // analogWrite(11, 120);
-
-
-  // delay(1000);
-
-  // analogWrite(3, 0);
-  // analogWrite(11, 0); 
-  
-  // delay(1000);
-
-
-  // digitalWrite(backB, HIGH);
-  // digitalWrite(backA, HIGH);
-
-  // analogWrite(3, 120);
-  // analogWrite(11, 120);
-
-
-  // delay(1000);
-
-
-  // analogWrite(3, 0);
-  // analogWrite(11, 0); 
-
-
 }
