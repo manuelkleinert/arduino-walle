@@ -34,6 +34,9 @@ int servoTargetPositionArray[16] = {300, 300, 300, 300, 100, 100, 270, 300, 353,
 
 float servoSpeedArray[16]        = {  1,   1,   1,   1,   1,   1,   1,   1,   4,   4,   1,   1,   1,   1,   1,   1};
 
+int motorDirection[2] = {HIGH, LOW};
+int motorSpeed[2] = {0, 0};
+
 Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver();
 DeserializationError err;
 
@@ -55,11 +58,19 @@ boolean readSerial() {
 
     switch (err.code()) {
       case DeserializationError::Ok:
-          int pin = (int)doc["pin"];
-          int position = (int)doc["pos"];
-          float speed = (float)doc["speed"];
-          servoTargetPositionArray[pin] = position ? position : 300;
-          servoSpeedArray[pin] = speed ? speed: 1;
+
+          if (doc["pin"] && doc["pos"]) {
+            int pin = (int)doc["pin"];
+            int position = (int)doc["pos"];
+            float speed = (float)doc["speed"];
+            servoTargetPositionArray[pin] = position ? position : 300;
+            servoSpeedArray[pin] = speed ? speed: 1;
+          }
+          
+          if (doc["dir"]) {
+
+          }
+
           return true;
           break;
       case DeserializationError::InvalidInput:
@@ -94,6 +105,13 @@ void setServos() {
   }
 }
 
+void setMotor() {
+  digitalWrite(backA, motorDirection[0]);
+  digitalWrite(backB, motorDirection[1]);
+  analogWrite(3, motorSpeed[0]);
+  analogWrite(11, motorSpeed[1]); 
+}
+
 void setup() {
   Serial.begin(115200);
   Serial.setTimeout(10);
@@ -122,6 +140,7 @@ void setup() {
 void loop() {
   setServos();
   readSerial();
+  setMotor();
 
   // Drive each servo one at a time using writeMicroseconds(), it's not precise due to calculation rounding!
   // The writeMicroseconds() function is used to mimic the Arduino Servo library writeMicroseconds() behavior. 
