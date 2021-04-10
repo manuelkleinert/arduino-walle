@@ -34,6 +34,7 @@ int servoTargetPositionArray[16] = {300, 300, 300, 300, 100, 100, 270, 300, 353,
 
 float servoSpeedArray[16]        = {  1,   1,   1,   1,   1,   1,   1,   1,   4,   4,   1,   1,   1,   1,   1,   1};
 
+int motorDelayIndex = 20;
 int motorDirection[2] = {HIGH, LOW};
 int motorSpeed[2] = {0, 0};
 
@@ -68,7 +69,11 @@ boolean readSerial() {
           }
           
           if (doc["dir"]) {
-
+            motorDirection[0] = (int)doc["dir"][0] ? HIGH : LOW;
+            motorDirection[1] = (int)doc["dir"][0] ? LOW : HIGH;
+            motorSpeed[0] = (int)doc["speed"][0];
+            motorSpeed[1] = (int)doc["speed"][1];
+            motorDelayIndex = 20;
           }
 
           return true;
@@ -106,10 +111,13 @@ void setServos() {
 }
 
 void setMotor() {
-  digitalWrite(backA, motorDirection[0]);
-  digitalWrite(backB, motorDirection[1]);
-  analogWrite(3, motorSpeed[0]);
-  analogWrite(11, motorSpeed[1]); 
+  if (motorDelayIndex > 0) {
+    digitalWrite(backA, motorDirection[0]);
+    digitalWrite(backB, motorDirection[1]);
+    analogWrite(3, motorSpeed[0]);
+    analogWrite(11, motorSpeed[1]);
+    motorDelayIndex --;
+  }
 }
 
 void setup() {
