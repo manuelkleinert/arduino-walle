@@ -26,13 +26,13 @@ int servoMin = 100;
 
                                      0    1    2    3    4    5    6    7    8    9    10   11   12   13   14   15
 */
-int servoMinArray[16]            = {100, 100, 100, 100, 150, 140,  50, 100, 200, 200, 100, 100, 100, 100, 100, 100};
-int servoMaxArray[16]            = {500, 500, 500, 500, 500, 420, 500, 500, 400, 400, 500, 500, 500, 500, 500, 500};
+int servoMinArray[16]            = {100, 100, 100, 100, 150, 140, 120, 100, 280, 230, 100, 100, 100, 100, 100, 100};
+int servoMaxArray[16]            = {500, 500, 500, 500, 500, 400, 500, 500, 405, 320, 500, 500, 500, 500, 500, 500};
 
-int servoPositionArray[16]       = {300, 300, 300, 300, 300, 300, 300, 300, 300, 300, 300, 300, 300, 300, 300, 300};
-int servoTargetPositionArray[16] = {300, 300, 300, 300, 100, 100, 270, 300, 300, 300, 300, 300, 300, 300, 300, 300};
+int servoPositionArray[16]       = {300, 300, 300, 300, 100, 100, 270, 300, 353, 248, 300, 300, 300, 300, 300, 300};
+int servoTargetPositionArray[16] = {300, 300, 300, 300, 100, 100, 270, 300, 353, 248, 300, 300, 300, 300, 300, 300};
 
-float servoSpeedArray[16] = {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1};
+float servoSpeedArray[16]        = {  1,   1,   1,   1,   1,   1,   1,   1,   4,   4,   1,   1,   1,   1,   1,   1};
 
 Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver();
 DeserializationError err;
@@ -123,45 +123,17 @@ void loop() {
   setServos();
   readSerial();
 
-  // pwm.setPWM(12, 0, 300);
-  // pwm.setPWM(13, 0, 300);
-
-  // delay(5000);
-
-  // pwm.setPWM(12, 0, 400);
-  // pwm.setPWM(13, 0, 200);
-
-  // delay(5000);
-
-/*    // Drive each servo one at a time using setPWM()
-  Serial.println(servonum);
-  for (uint16_t pulselen = SERVOMIN; pulselen < SERVOMAX; pulselen++) {
-    pwm.setPWM(servonum, 0, pulselen);
-  }
-
-  delay(500);
-  for (uint16_t pulselen = SERVOMAX; pulselen > SERVOMIN; pulselen--) {
-    pwm.setPWM(servonum, 0, pulselen);
-  }
-
-  delay(500);
-
   // Drive each servo one at a time using writeMicroseconds(), it's not precise due to calculation rounding!
   // The writeMicroseconds() function is used to mimic the Arduino Servo library writeMicroseconds() behavior. 
-  for (uint16_t microsec = USMIN; microsec < USMAX; microsec++) {
-    pwm.writeMicroseconds(servonum, microsec);
-  }
+  // for (uint16_t microsec = USMIN; microsec < USMAX; microsec++) {
+  //   pwm.writeMicroseconds(servonum, microsec);
+  // }
 
-  delay(500);
-  for (uint16_t microsec = USMAX; microsec > USMIN; microsec--) {
-    pwm.writeMicroseconds(servonum, microsec);
-  }
+  // delay(500);
+  // for (uint16_t microsec = USMAX; microsec > USMIN; microsec--) {
+  //   pwm.writeMicroseconds(servonum, microsec);
+  // }
 
-  delay(500);
-
-  servonum++;
-  if (servonum > 12) servonum = 0; // Testing the first 8 servo channels
- */
 
   // forward @ full speed
   // digitalWrite(mm, HIGH); //Establishes forward direction of Channel A
