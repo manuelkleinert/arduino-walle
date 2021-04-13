@@ -70,7 +70,7 @@ boolean readSerial() {
           
           if (doc["dir"]) {
             motorDirection[0] = (int)doc["dir"][0] ? HIGH : LOW;
-            motorDirection[1] = (int)doc["dir"][0] ? LOW : HIGH;
+            motorDirection[1] = (int)doc["dir"][1] ? LOW : HIGH;
             motorSpeed[0] = (int)doc["speed"][0];
             motorSpeed[1] = (int)doc["speed"][1];
             motorDelayIndex = 20;
