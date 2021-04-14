@@ -60,7 +60,7 @@ boolean readSerial() {
     switch (err.code()) {
       case DeserializationError::Ok:
 
-          if (doc["pin"] && doc["pos"]) {
+          if (doc["pin"] != NULL && doc["pos"] != NULL) {
             int pin = (int)doc["pin"];
             int position = (int)doc["pos"];
             float speed = (float)doc["speed"];
@@ -68,7 +68,7 @@ boolean readSerial() {
             servoSpeedArray[pin] = speed ? speed: 1;
           }
           
-          if (doc["dir"]) {
+          if (doc["dir"] != NULL) {
             motorDirection[0] = (int)doc["dir"][0] ? HIGH : LOW;
             motorDirection[1] = (int)doc["dir"][1] ? LOW : HIGH;
             motorSpeed[0] = (int)doc["speed"][0];
