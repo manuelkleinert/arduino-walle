@@ -51,26 +51,32 @@ boolean readSerial() {
   if (Serial.available()) {
     readString = "";
 
+    Serial.println("====== Serial read ======");
+
     while (Serial.available()) {
       readString += Serial.readStringUntil('\n');
+
+      Serial.println("====== read ======");
+      Serial.println(readString);
     }
 
+    Serial.println("====== SET ======");
+    Serial.println(readString);
+    
     err = deserializeJson(doc, readString);
+
+    Serial.println(err.code());
+
 
     switch (err.code()) {
       case DeserializationError::Ok:
-        if (doc["pin"] != NULL && doc["pos"] != NULL) {
+        if (isDigit(doc["pin"]) && isDigit(doc["pos"])) {
           int pin = (int)doc["pin"];
           int position = (int)doc["pos"];
           float speed = (float)doc["speed"];
-          Serial.println("====== SET ======");
-          Serial.println(position);
-          Serial.println(speed);
           servoTargetPositionArray[pin] = position ? position : 300;
           servoSpeedArray[pin] = speed ? speed: 1;
-        }
-        
-        if (doc["dir"] != NULL) {
+        } else if (doc["dir"] != NULL) {
           motorDirection[0] = (int)doc["dir"][0] ? HIGH : LOW;
           motorDirection[1] = (int)doc["dir"][1] ? LOW : HIGH;
           motorSpeed[0] = (int)doc["speed"][0];
@@ -127,7 +133,7 @@ void setMotor() {
 
 void setup() {
   Serial.begin(115200);
-  Serial.setTimeout(10);
+  Serial.setTimeout(100);
   while (!Serial) continue;
 
   pinMode(backA, OUTPUT);
