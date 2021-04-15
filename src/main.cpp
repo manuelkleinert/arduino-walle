@@ -26,8 +26,8 @@ int servoMin = 100;
 
                                      0    1    2    3    4    5    6    7    8    9    10   11   12   13   14   15
 */
-int servoMinArray[16]            = {100, 100, 100, 100, 150, 140, 120, 100, 280, 230, 100, 100, 100, 100, 100, 100};
-int servoMaxArray[16]            = {500, 500, 500, 500, 500, 400, 500, 500, 405, 320, 500, 500, 500, 500, 500, 500};
+int servoMinArray[16]            = {200, 200, 100, 100, 150, 140, 120, 100, 280, 230, 100, 100, 100, 100, 100, 100};
+int servoMaxArray[16]            = {400, 400, 500, 500, 500, 400, 500, 500, 405, 320, 500, 500, 500, 500, 500, 500};
 
 int servoPositionArray[16]       = {300, 300, 300, 300, 100, 100, 270, 300, 353, 248, 300, 300, 300, 300, 300, 300};
 int servoTargetPositionArray[16] = {300, 300, 300, 300, 100, 100, 270, 300, 353, 248, 300, 300, 300, 300, 300, 300};
@@ -51,32 +51,21 @@ boolean readSerial() {
   if (Serial.available()) {
     readString = "";
 
-    Serial.println("====== Serial read ======");
-
     while (Serial.available()) {
       readString += Serial.readStringUntil('\n');
-
-      Serial.println("====== read ======");
-      Serial.println(readString);
     }
-
-    Serial.println("====== SET ======");
-    Serial.println(readString);
     
     err = deserializeJson(doc, readString);
 
-    Serial.println(err.code());
-
-
     switch (err.code()) {
       case DeserializationError::Ok:
-        if (isDigit(doc["pin"]) && isDigit(doc["pos"])) {
+        if (doc["pin"] != "" && doc["pos"]) {
           int pin = (int)doc["pin"];
           int position = (int)doc["pos"];
           float speed = (float)doc["speed"];
           servoTargetPositionArray[pin] = position ? position : 300;
           servoSpeedArray[pin] = speed ? speed: 1;
-        } else if (doc["dir"] != NULL) {
+        } else if (doc["dir"]) {
           motorDirection[0] = (int)doc["dir"][0] ? HIGH : LOW;
           motorDirection[1] = (int)doc["dir"][1] ? LOW : HIGH;
           motorSpeed[0] = (int)doc["speed"][0];
@@ -112,9 +101,9 @@ void setServos() {
       } else {
         servoPositionArray[i] = (int) (servoPositionArray[i] - servoSpeedArray[i]);
       }
-
-      pwm.setPWM(i, 0, servoPositionArray[i]);
     }
+
+    pwm.setPWM(i, 0, servoPositionArray[i]);
   }
 }
 
@@ -146,7 +135,6 @@ void setup() {
   pwm.begin();
   pwm.setOscillatorFrequency(27000000);
   pwm.setPWMFreq(50);
-
   
   delay(500);
   setServos();
