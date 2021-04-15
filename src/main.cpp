@@ -59,25 +59,27 @@ boolean readSerial() {
 
     switch (err.code()) {
       case DeserializationError::Ok:
+        if (doc["pin"] != NULL && doc["pos"] != NULL) {
+          int pin = (int)doc["pin"];
+          int position = (int)doc["pos"];
+          float speed = (float)doc["speed"];
+          Serial.println("====== SET ======");
+          Serial.println(position);
+          Serial.println(speed);
+          servoTargetPositionArray[pin] = position ? position : 300;
+          servoSpeedArray[pin] = speed ? speed: 1;
+        }
+        
+        if (doc["dir"] != NULL) {
+          motorDirection[0] = (int)doc["dir"][0] ? HIGH : LOW;
+          motorDirection[1] = (int)doc["dir"][1] ? LOW : HIGH;
+          motorSpeed[0] = (int)doc["speed"][0];
+          motorSpeed[1] = (int)doc["speed"][1];
+          motorDelayIndex = 20;
+        }
 
-          if (doc["pin"] != NULL && doc["pos"] != NULL) {
-            int pin = (int)doc["pin"];
-            int position = (int)doc["pos"];
-            float speed = (float)doc["speed"];
-            servoTargetPositionArray[pin] = position ? position : 300;
-            servoSpeedArray[pin] = speed ? speed: 1;
-          }
-          
-          if (doc["dir"] != NULL) {
-            motorDirection[0] = (int)doc["dir"][0] ? HIGH : LOW;
-            motorDirection[1] = (int)doc["dir"][1] ? LOW : HIGH;
-            motorSpeed[0] = (int)doc["speed"][0];
-            motorSpeed[1] = (int)doc["speed"][1];
-            motorDelayIndex = 20;
-          }
-
-          return true;
-          break;
+        return true;
+        break;
       case DeserializationError::InvalidInput:
           Serial.print("!!! Invalid input!");
           break;
@@ -95,18 +97,18 @@ boolean readSerial() {
 
 void setServos() {
   for (int i = 0; i < 16; i++) {
-
     if (servoTargetPositionArray[i] != servoPositionArray[i] &&
       (servoMaxArray[i] >= servoPositionArray[i] || servoMaxArray[i] >= servoTargetPositionArray[i]) 
        && (servoMinArray[i] <= servoPositionArray[i] || servoMinArray[i] <= servoTargetPositionArray[i])) {
+
       if (servoPositionArray[i] < servoTargetPositionArray[i]) {
         servoPositionArray[i] = (int) (servoPositionArray[i] + servoSpeedArray[i]);
       } else {
         servoPositionArray[i] = (int) (servoPositionArray[i] - servoSpeedArray[i]);
       }
-    }
 
-    pwm.setPWM(i, 0, servoPositionArray[i]);
+      pwm.setPWM(i, 0, servoPositionArray[i]);
+    }
   }
 }
 
