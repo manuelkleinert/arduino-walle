@@ -3,8 +3,9 @@
 #include <ArduinoJson.h>
 #include <Adafruit_PWMServoDriver.h>
 
-int backA = 12;
-int backB = 13;
+int servoSwitchPin = 2;
+int motorPinA = 12;
+int motorPinB = 13;
 
 int servoDefault = 300;
 int servoMax = 500;
@@ -33,6 +34,7 @@ int servoPositionArray[16]       = {300, 300, 300, 300, 100, 100, 270, 300, 353,
 int servoTargetPositionArray[16] = {300, 300, 300, 300, 100, 100, 270, 300, 353, 248, 300, 300, 300, 300, 300, 300};
 
 float servoSpeedArray[16]        = {  1,   1,   1,   1,   1,   1,   1,   1,   4,   4,   1,   1,   1,   1,   1,   1};
+int servoDelayIndex = 200;
 
 int motorDelayIndex = 20;
 int motorDirection[2] = {HIGH, LOW};
@@ -65,6 +67,7 @@ boolean readSerial() {
           float speed = (float)doc["speed"];
           servoTargetPositionArray[pin] = position ? position : 300;
           servoSpeedArray[pin] = speed ? speed: 1;
+          servoDelayIndex = 200;
         } else if (doc["dir"]) {
           motorDirection[0] = (int)doc["dir"][0] ? HIGH : LOW;
           motorDirection[1] = (int)doc["dir"][1] ? LOW : HIGH;
@@ -90,7 +93,17 @@ boolean readSerial() {
   return false;
 }
 
+void switchServos() {
+  if (servoDelayIndex > 0) {
+    servoDelayIndex --;
+    digitalWrite(servoSwitchPin, HIGH);    
+  } else {
+    digitalWrite(servoSwitchPin, LOW);
+  }
+}
+
 void setServos() {
+  switchServos();
   for (int i = 0; i < 16; i++) {
     if (servoTargetPositionArray[i] != servoPositionArray[i] &&
       (servoMaxArray[i] >= servoPositionArray[i] || servoMaxArray[i] >= servoTargetPositionArray[i]) 
@@ -103,14 +116,16 @@ void setServos() {
       }
     }
 
-    pwm.setPWM(i, 0, servoPositionArray[i]);
+    if (servoDelayIndex > 0) {
+      pwm.setPWM(i, 0, servoPositionArray[i]);
+    }
   }
 }
 
 void setMotor() {
   if (motorDelayIndex > 0) {
-    digitalWrite(backA, motorDirection[0]);
-    digitalWrite(backB, motorDirection[1]);
+    digitalWrite(motorPinA, motorDirection[0]);
+    digitalWrite(motorPinB, motorDirection[1]);
     analogWrite(3, motorSpeed[0]);
     analogWrite(11, motorSpeed[1]);
     motorDelayIndex --;
@@ -121,16 +136,19 @@ void setMotor() {
 }
 
 void setup() {
+  
   Serial.begin(115200);
   Serial.setTimeout(100);
+
   while (!Serial) continue;
 
-  pinMode(backA, OUTPUT);
-  pinMode(backB, OUTPUT);
+  pinMode(servoSwitchPin, OUTPUT);
+  pinMode(motorPinA, OUTPUT);
+  pinMode(motorPinB, OUTPUT);
 
   // Motor direction
-  digitalWrite(backA, HIGH);
-  digitalWrite(backB, LOW);
+  digitalWrite(motorPinA, HIGH);
+  digitalWrite(motorPinB, LOW);
 
   pwm.begin();
   pwm.setOscillatorFrequency(27000000);
