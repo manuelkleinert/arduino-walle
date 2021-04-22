@@ -5,13 +5,7 @@
 // #include <Adafruit_GFX.h>
 // #include <Adafruit_ST7789.h>
 
-
-// int  TFT_DC = 7;     // TFT DC  pin is connected to NodeMCU pin D1 (GPIO5)
-// int  TFT_RST = 6;     // TFT RST pin is connected to NodeMCU pin D2 (GPIO4)
-// int  TFT_CS = 100;   // TFT CS  pin is connected to NodeMCU pin D8 (GPIO15)
-
-// Adafruit_ST7789 tft = Adafruit_ST7789(TFT_CS, TFT_DC, TFT_RST);
-
+// Adafruit_ST7789 tft = Adafruit_ST7789(10, 7, 6);
 
 int servoSwitchPin = 2;
 int motorPinA = 12;
@@ -20,7 +14,6 @@ int motorPinB = 13;
 int servoDefault = 300;
 int servoMax = 500;
 int servoMin = 100;
-
 
 /*
   Servos:
@@ -178,10 +171,10 @@ void setup() {
 
 
   // if the display has CS pin try with SPI_MODE0
-  // tft.init(240, 240, SPI_MODE2);    // Init ST7789 display 240x240 pixel
+  //tft.init(240, 240, SPI_MODE2);    // Init ST7789 display 240x240 pixel
  
   // // if the screen is flipped, remove this command
-  // tft.setRotation(2);
+  //tft.setRotation(2);
 
   // tft.fillScreen(ST77XX_BLACK);
   // testdrawtext("Wall-E", ST77XX_WHITE);
