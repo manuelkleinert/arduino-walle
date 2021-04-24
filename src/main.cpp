@@ -2,14 +2,24 @@
 #include <Wire.h>
 #include <ArduinoJson.h>
 #include <Adafruit_PWMServoDriver.h>
-// #include <Adafruit_GFX.h>
-// #include <Adafruit_ST7789.h>
+#include <SPI.h>
+#include <Adafruit_GFX.h>
+#include <Arduino_ST7789_Fast.h>
 
-// Adafruit_ST7789 tft = Adafruit_ST7789(10, 7, 6);
+#define TFT_DC    9
+#define TFT_RST   10 
+#define SCR_WD   240
+#define SCR_HT   240
+
+Arduino_ST7789 lcd = Arduino_ST7789(TFT_DC, TFT_RST);
 
 int servoSwitchPin = 2;
-int motorPinA = 12;
-int motorPinB = 13;
+
+int motorPinA = 3;
+int motorPinDirA = 4;
+
+int motorPinB = 5;
+int motorPinDirB = 6;
 
 int servoDefault = 300;
 int servoMax = 500;
@@ -40,7 +50,7 @@ int servoTargetPositionArray[16] = {300, 300, 300, 300, 100, 100, 270, 300, 353,
 float servoSpeedArray[16]        = {  1,   1,   1,   1,   1,   1,   1,   1,   4,   4,   1,   1,   1,   1,   1,   1};
 int servoDelayIndex = 200;
 
-int motorDelayIndex = 20;
+int motorDelayIndex = 50;
 int motorDirection[2] = {HIGH, LOW};
 int motorSpeed[2] = {0, 0};
 
@@ -65,6 +75,7 @@ boolean readSerial() {
 
     switch (err.code()) {
       case DeserializationError::Ok:
+
         if (doc["pin"] != "" && doc["pos"]) {
           int pin = (int)doc["pin"];
           int position = (int)doc["pos"];
@@ -83,13 +94,16 @@ boolean readSerial() {
         return true;
         break;
       case DeserializationError::InvalidInput:
-          Serial.print("!!! Invalid input!");
+          Serial.println("!!! Invalid input!");
+          Serial.println(readString);
           break;
       case DeserializationError::NoMemory:
-          Serial.print("!!! Not enough memory");
+          Serial.println("!!! Not enough memory");
+          Serial.println(readString);
           break;
       default:
-          Serial.print("!!! Deserialization failed");
+          Serial.println("!!! Deserialization failed");
+          Serial.println(readString);
           break;
     }
   }
@@ -128,64 +142,58 @@ void setServos() {
 
 void setMotor() {
   if (motorDelayIndex > 0) {
-    digitalWrite(motorPinA, motorDirection[0]);
-    digitalWrite(motorPinB, motorDirection[1]);
-    analogWrite(3, motorSpeed[0]);
-    analogWrite(11, motorSpeed[1]);
+    digitalWrite(motorPinDirA, motorDirection[0]);
+    digitalWrite(motorPinDirB, motorDirection[1]);
+    analogWrite(motorPinA, motorSpeed[0]);
+    analogWrite(motorPinB, motorSpeed[1]);
     motorDelayIndex --;
+    delay(10);
   } else {
-    analogWrite(3, 0);
-    analogWrite(11, 0);
+    analogWrite(motorPinA, 0);
+    analogWrite(motorPinB, 0);
+    delay(10);
   }
 }
 
-// void testdrawtext(char *text, uint16_t color) {
-//   tft.setCursor(0, 0);
-//   tft.setTextColor(color);
-//   tft.setTextWrap(true);
-//   tft.print(text);
-// }
-
 void setup() {
+
+  // pinMode(servoSwitchPin, OUTPUT);
+  // pinMode(motorPinDirA, OUTPUT);
+  // pinMode(motorPinDirB, OUTPUT);
   
-  Serial.begin(115200);
-  Serial.setTimeout(100);
+  // Serial.begin(115200);
+  // Serial.setTimeout(100);
 
-  while (!Serial) continue;
+  // while (!Serial) continue;
 
-  pinMode(servoSwitchPin, OUTPUT);
-  pinMode(motorPinA, OUTPUT);
-  pinMode(motorPinB, OUTPUT);
+  lcd.init(SCR_WD, SCR_HT);
+  lcd.setRotation(4);
 
-  // Motor direction
-  digitalWrite(motorPinA, HIGH);
-  digitalWrite(motorPinB, LOW);
+  lcd.fillScreen(BLACK);
+  lcd.setCursor(0, 0);
+  lcd.setTextColor(WHITE,BLUE);
+  lcd.setTextSize(3);
+  lcd.println("Wall-E");
 
-  pwm.begin();
-  pwm.setOscillatorFrequency(27000000);
-  pwm.setPWMFreq(50);
+
+  // // Motor direction
+  // digitalWrite(motorPinDirA, HIGH);
+  // digitalWrite(motorPinDirB, LOW);
+
+  // pwm.begin();
+  // pwm.setOscillatorFrequency(27000000);
+  // pwm.setPWMFreq(50);
   
-  delay(500);
-  setServos();
-  delay(500);
+  // delay(500);
+  // setServos();
+  // delay(500);
 
-
-  // if the display has CS pin try with SPI_MODE0
-  //tft.init(240, 240, SPI_MODE2);    // Init ST7789 display 240x240 pixel
- 
-  // // if the screen is flipped, remove this command
-  //tft.setRotation(2);
-
-  // tft.fillScreen(ST77XX_BLACK);
-  // testdrawtext("Wall-E", ST77XX_WHITE);
-
-
-  Serial.println("<Wall-E is ready>");
-  Serial.flush();
+  // Serial.println("<Wall-E is ready>");
+  // Serial.flush();
 }
 
 void loop() {
-  setServos();
-  readSerial();
-  setMotor();
+  // setServos();
+  // readSerial();
+  // setMotor();
 }
