@@ -2,19 +2,19 @@
 #include <Wire.h>
 #include <ArduinoJson.h>
 #include <Adafruit_PWMServoDriver.h>
+
 #include <Adafruit_GFX.h>    // Core graphics library
-#include <Arduino_ST7789_Fast.h>
-//#include <Adafruit_ST7789.h> // Hardware-specific library for ST7789
+#include <Adafruit_ST7789.h> // Hardware-specific library for ST7789
 #include <SPI.h>             // Arduino SPI library
 
-// #define TFT_CS    8
-#define TFT_DC    9
-#define TFT_RST   10 
+#define TFT_CS    -1
+#define TFT_DC    8
+#define TFT_RST   9 
 #define SCR_WD   240
 #define SCR_HT   240
 
-Arduino_ST7789 tft = Arduino_ST7789(TFT_DC, TFT_RST);
-// Adafruit_ST7789 tft = Adafruit_ST7789(TFT_DC, TFT_RST);
+//Arduino_ST7789 tft = Arduino_ST7789(TFT_DC, TFT_RST);
+Adafruit_ST7789 tft = Adafruit_ST7789(TFT_CS, TFT_DC, TFT_RST);
 float p = 3.1415926;
 
 
@@ -29,6 +29,10 @@ int motorPinDirB = 6;
 int servoDefault = 300;
 int servoMax = 500;
 int servoMin = 100;
+
+int ledRedPin = 7;
+int ledBluePin = 10;
+int ledGreenPin = 12;
 
 /*
   Servos:
@@ -166,7 +170,7 @@ void setMotor() {
 
 
 void testlines(uint16_t color) {
-  tft.fillScreen(BLACK);
+  tft.fillScreen(ST77XX_BLACK);
   for (int16_t x=0; x < tft.width(); x+=6) {
     tft.drawLine(0, 0, x, tft.height()-1, color);
     delay(0);
@@ -176,7 +180,7 @@ void testlines(uint16_t color) {
     delay(0);
   }
  
-  tft.fillScreen(BLACK);
+  tft.fillScreen(ST77XX_BLACK);
   for (int16_t x=0; x < tft.width(); x+=6) {
     tft.drawLine(tft.width()-1, 0, x, tft.height()-1, color);
     delay(0);
@@ -186,7 +190,7 @@ void testlines(uint16_t color) {
     delay(0);
   }
  
-  tft.fillScreen(BLACK);
+  tft.fillScreen(ST77XX_BLACK);
   for (int16_t x=0; x < tft.width(); x+=6) {
     tft.drawLine(0, tft.height()-1, x, 0, color);
     delay(0);
@@ -196,7 +200,7 @@ void testlines(uint16_t color) {
     delay(0);
   }
  
-  tft.fillScreen(BLACK);
+  tft.fillScreen(ST77XX_BLACK);
   for (int16_t x=0; x < tft.width(); x+=6) {
     tft.drawLine(tft.width()-1, tft.height()-1, x, 0, color);
     delay(0);
@@ -215,7 +219,7 @@ void testdrawtext(char *text, uint16_t color) {
 }
  
 void testfastlines(uint16_t color1, uint16_t color2) {
-  tft.fillScreen(BLACK);
+  tft.fillScreen(ST77XX_BLACK);
   for (int16_t y=0; y < tft.height(); y+=5) {
     tft.drawFastHLine(0, y, tft.width(), color1);
   }
@@ -225,14 +229,14 @@ void testfastlines(uint16_t color1, uint16_t color2) {
 }
  
 void testdrawrects(uint16_t color) {
-  tft.fillScreen(BLACK);
+  tft.fillScreen(ST77XX_BLACK);
   for (int16_t x=0; x < tft.width(); x+=6) {
     tft.drawRect(tft.width()/2 -x/2, tft.height()/2 -x/2 , x, x, color);
   }
 }
  
 void testfillrects(uint16_t color1, uint16_t color2) {
-  tft.fillScreen(BLACK);
+  tft.fillScreen(ST77XX_BLACK);
   for (int16_t x=tft.width()-1; x > 6; x-=6) {
     tft.fillRect(tft.width()/2 -x/2, tft.height()/2 -x/2 , x, x, color1);
     tft.drawRect(tft.width()/2 -x/2, tft.height()/2 -x/2 , x, x, color2);
@@ -256,7 +260,7 @@ void testdrawcircles(uint8_t radius, uint16_t color) {
 }
  
 void testtriangles() {
-  tft.fillScreen(BLACK);
+  tft.fillScreen(ST77XX_BLACK);
   int color = 0xF800;
   int t;
   int w = tft.width()/2;
@@ -273,7 +277,7 @@ void testtriangles() {
 }
  
 void testroundrects() {
-  tft.fillScreen(BLACK);
+  tft.fillScreen(ST77XX_BLACK);
   int color = 100;
   int i;
   int t;
@@ -296,95 +300,132 @@ void testroundrects() {
  
 void tftPrintTest() {
   tft.setTextWrap(false);
-  tft.fillScreen(BLACK);
+  tft.fillScreen(ST77XX_BLACK);
   tft.setCursor(0, 30);
-  tft.setTextColor(RED);
+  tft.setTextColor(ST77XX_RED);
   tft.setTextSize(1);
   tft.println("Hello World!");
-  tft.setTextColor(YELLOW);
+  tft.setTextColor(ST77XX_YELLOW);
   tft.setTextSize(2);
   tft.println("Hello World!");
-  tft.setTextColor(GREEN);
+  tft.setTextColor(ST77XX_GREEN);
   tft.setTextSize(3);
   tft.println("Hello World!");
-  tft.setTextColor(BLUE);
+  tft.setTextColor(ST77XX_BLUE);
   tft.setTextSize(4);
   tft.print(1234.567);
   delay(1500);
   tft.setCursor(0, 0);
-  tft.fillScreen(BLACK);
-  tft.setTextColor(WHITE);
+  tft.fillScreen(ST77XX_BLACK);
+  tft.setTextColor(ST77XX_WHITE);
   tft.setTextSize(0);
   tft.println("Hello World!");
   tft.setTextSize(1);
-  tft.setTextColor(GREEN);
+  tft.setTextColor(ST77XX_GREEN);
   tft.print(p, 6);
   tft.println(" Want pi?");
   tft.println(" ");
   tft.print(8675309, HEX); // print 8,675,309 out in HEX!
   tft.println(" Print HEX!");
   tft.println(" ");
-  tft.setTextColor(WHITE);
+  tft.setTextColor(ST77XX_WHITE);
   tft.println("Sketch has been");
   tft.println("running for: ");
-  tft.setTextColor(MAGENTA);
+  tft.setTextColor(ST77XX_MAGENTA);
   tft.print(millis() / 1000);
-  tft.setTextColor(WHITE);
+  tft.setTextColor(ST77XX_WHITE);
   tft.print(" seconds.");
 }
  
 void mediabuttons() {
   // play
-  tft.fillScreen(BLACK);
-  tft.fillRoundRect(25, 10, 78, 60, 8, WHITE);
-  tft.fillTriangle(42, 20, 42, 60, 90, 40, RED);
+  tft.fillScreen(ST77XX_BLACK);
+  tft.fillRoundRect(25, 10, 78, 60, 8, ST77XX_WHITE);
+  tft.fillTriangle(42, 20, 42, 60, 90, 40, ST77XX_RED);
   delay(500);
   // pause
-  tft.fillRoundRect(25, 90, 78, 60, 8, WHITE);
-  tft.fillRoundRect(39, 98, 20, 45, 5, GREEN);
-  tft.fillRoundRect(69, 98, 20, 45, 5, GREEN);
+  tft.fillRoundRect(25, 90, 78, 60, 8, ST77XX_WHITE);
+  tft.fillRoundRect(39, 98, 20, 45, 5, ST77XX_GREEN);
+  tft.fillRoundRect(69, 98, 20, 45, 5, ST77XX_GREEN);
   delay(500);
   // play color
-  tft.fillTriangle(42, 20, 42, 60, 90, 40, BLUE);
+  tft.fillTriangle(42, 20, 42, 60, 90, 40, ST77XX_BLUE);
   delay(50);
   // pause color
-  tft.fillRoundRect(39, 98, 20, 45, 5, RED);
-  tft.fillRoundRect(69, 98, 20, 45, 5, RED);
+  tft.fillRoundRect(39, 98, 20, 45, 5, ST77XX_RED);
+  tft.fillRoundRect(69, 98, 20, 45, 5, ST77XX_RED);
   // play color
-  tft.fillTriangle(42, 20, 42, 60, 90, 40, GREEN);
+  tft.fillTriangle(42, 20, 42, 60, 90, 40, ST77XX_GREEN);
 }
-
 
 
 
 
 void setup() {
 
-  // pinMode(servoSwitchPin, OUTPUT);
-  // pinMode(motorPinDirA, OUTPUT);
-  // pinMode(motorPinDirB, OUTPUT);
+  pinMode(servoSwitchPin, OUTPUT);
+
+  pinMode(motorPinDirA, OUTPUT);
+  pinMode(motorPinDirB, OUTPUT);
+  
   
   Serial.begin(115200);
   Serial.setTimeout(100);
 
   while (!Serial) continue;
 
-  // tft.init(240, 240, SPI_MODE1); 
-  tft.init(SCR_WD, SCR_HT);
+
+  // LED 
+  analogWrite (ledRedPin, 0);  
+  analogWrite (ledBluePin, 0);  
+  analogWrite (ledGreenPin, 0); 
+
+  int t;
+  for(t = 0 ; t <= 1; t++) {
+    analogWrite (ledRedPin, 255);  
+    delay(500);
+    analogWrite (ledBluePin, 255);
+    analogWrite (ledRedPin, 0);  
+    delay(500);
+    analogWrite (ledGreenPin, 255); 
+    analogWrite (ledBluePin, 0);  
+    delay(500);
+    analogWrite (ledRedPin, 200);  
+    analogWrite (ledBluePin, 200);  
+    analogWrite (ledGreenPin, 200);
+    delay(500);
+
+    analogWrite (ledRedPin, 0);  
+    analogWrite (ledBluePin, 0);  
+    analogWrite (ledGreenPin, 0);
+  }
+
+
+  tft.init(240, 240, SPI_MODE2);
+
+  // Paint red/green/blue rectangles
+  tft.fillRect(0, 0 , 240, 80, ST77XX_RED);
+  tft.fillRect(0, 80 , 240, 160, ST77XX_GREEN);
+  tft.fillRect(0, 160 , 240, 240, ST77XX_BLUE);
+  delay (1000);
+
+  //tft.init(240, 240, SPI_MODE2);    // Init ST7789 display 240x240 pixel
+ 
+  // if the screen is flipped, remove this command
   tft.setRotation(4);
  
   Serial.println(F("Initialized"));
  
   uint16_t time = millis();
-  tft.fillScreen(BLACK);
+  tft.fillScreen(ST77XX_BLACK);
   time = millis() - time;
  
   Serial.println(time, DEC);
   delay(500);
  
   // large block of text
-  tft.fillScreen(BLACK);
-  testdrawtext("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur adipiscing ante sed nibh tincidunt feugiat. Maecenas enim massa, fringilla sed malesuada et, malesuada sit amet turpis. Sed porttitor neque ut ante pretium vitae malesuada nunc bibendum. Nullam aliquet ultrices massa eu hendrerit. Ut sed nisi lorem. In vestibulum purus a tortor imperdiet posuere. ", WHITE);
+  tft.fillScreen(ST77XX_BLACK);
+  testdrawtext("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur adipiscing ante sed nibh tincidunt feugiat. Maecenas enim massa, fringilla sed malesuada et, malesuada sit amet turpis. Sed porttitor neque ut ante pretium vitae malesuada nunc bibendum. Nullam aliquet ultrices massa eu hendrerit. Ut sed nisi lorem. In vestibulum purus a tortor imperdiet posuere. ", ST77XX_WHITE);
   delay(1000);
  
   // tft print function!
@@ -392,26 +433,26 @@ void setup() {
   delay(4000);
  
   // a single pixel
-  tft.drawPixel(tft.width()/2, tft.height()/2, GREEN);
+  tft.drawPixel(tft.width()/2, tft.height()/2, ST77XX_GREEN);
   delay(500);
  
   // line draw test
-  testlines(YELLOW);
+  testlines(ST77XX_YELLOW);
   delay(500);
  
   // optimized lines
-  testfastlines(RED, BLUE);
+  testfastlines(ST77XX_RED, ST77XX_BLUE);
   delay(500);
  
-  testdrawrects(GREEN);
+  testdrawrects(ST77XX_GREEN);
   delay(500);
  
-  testfillrects(YELLOW, MAGENTA);
+  testfillrects(ST77XX_YELLOW, ST77XX_MAGENTA);
   delay(500);
  
-  tft.fillScreen(BLACK);
-  testfillcircles(10, BLUE);
-  testdrawcircles(10, WHITE);
+  tft.fillScreen(ST77XX_BLACK);
+  testfillcircles(10, ST77XX_BLUE);
+  testdrawcircles(10, ST77XX_WHITE);
   delay(500);
  
   testroundrects();
@@ -425,6 +466,8 @@ void setup() {
  
   Serial.println("done");
   delay(1000);
+
+
 
 
   // // Motor direction
