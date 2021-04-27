@@ -1,10 +1,10 @@
 #include <Arduino.h>
 #include <Wire.h>
+#include <SPI.h>
 #include <ArduinoJson.h>
 #include <Adafruit_PWMServoDriver.h>
-#include <Adafruit_GFX.h>    // Core graphics library
-#include <Adafruit_ST7789.h> // Hardware-specific library for ST7789
-#include <SPI.h>             // Arduino SPI library
+#include <Adafruit_GFX.h>
+#include <Arduino_ST7789_Fast.h>
 
 #define TFT_CS    -1
 #define TFT_DC    48
@@ -12,9 +12,7 @@
 #define SCR_WD   240
 #define SCR_HT   240
 
-Adafruit_ST7789 tft = Adafruit_ST7789(TFT_CS, TFT_DC, TFT_RST);
-float p = 3.1415926;
-
+Arduino_ST7789 tft = Arduino_ST7789(TFT_DC, TFT_RST);
 
 int servoSwitchPin = 2;
 
@@ -31,8 +29,16 @@ int servoMax = 500;
 int servoMin = 100;
 
 int ledRedPin = 5;
+int ledRedBrightness = 50;
+int ledRedFadeAmount = 1;
+
 int ledBluePin = 6;
+int ledBlueBrightness = 50;
+int ledBlueFadeAmount = 1;
+
 int ledGreenPin = 7;
+int ledGreenBrightness = 50;
+int ledGreenFadeAmount = 1;
 
 /*
   Servos:
@@ -75,12 +81,9 @@ uint8_t servonum = 0;
 boolean readSerial() {
   if (Serial.available()) {
     readString = "";
-
     while (Serial.available()) {
       readString += Serial.readStringUntil('\n');
     }
-
-    Serial.println(readString);
     
     err = deserializeJson(doc, readString);
 
@@ -165,6 +168,14 @@ void setMotor() {
   }
 }
 
+void ledRed() {
+   analogWrite(ledRedPin, ledRedBrightness);
+  ledRedBrightness = ledRedBrightness + ledRedFadeAmount;
+  if (ledRedBrightness <= 20 || ledRedBrightness >= 100) {
+    ledRedFadeAmount = -ledRedFadeAmount;
+  }
+}
+
 void setup() {
 
   pinMode(servoSwitchPin, OUTPUT);
@@ -177,21 +188,20 @@ void setup() {
   while (!Serial) continue;
 
     // Display
-  tft.init(240, 240, SPI_MODE2);
+  tft.init(240, 240);
   tft.setRotation(4);
-  tft.fillScreen(ST77XX_BLACK);
+  tft.fillScreen(BLACK);
 
-  tft.setTextColor(ST77XX_WHITE);
+  tft.setTextColor(WHITE);
   tft.setTextWrap(true);
 
-  // tft.setCursor(20, 10);
-  // tft.setTextSize(2);
-  // tft.print("Start...");
+  tft.setCursor(5, 5);
+  tft.setTextSize(2);
+  tft.print("load ...");
 
-  tft.setCursor(20, 50);
+  tft.setCursor(30, 50);
   tft.setTextSize(5);
   tft.print("Wall-E");
-
 
   // LED 
   analogWrite (ledRedPin, 0);  
@@ -222,16 +232,26 @@ void setup() {
   setServos();
   delay(2000);
 
-  tft.fillScreen(ST77XX_WHITE);
+  tft.fillScreen(WHITE);
   delay(500);
-  tft.fillScreen(ST77XX_BLACK);
+  tft.fillScreen(BLACK);
 
   Serial.println("<Wall-E is ready>");
   Serial.flush();
+
+
+  tft.setTextColor(YELLOW);
+  tft.setTextWrap(true);
+
+  tft.setCursor(15, 10);
+  tft.setTextSize(2);
+  tft.print("SOLAR CHARGE LEVEL");
+
 }
 
 void loop() {
   setServos();
   readSerial();
   setMotor();
+  ledRed();
 }
