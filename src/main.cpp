@@ -2,18 +2,16 @@
 #include <Wire.h>
 #include <ArduinoJson.h>
 #include <Adafruit_PWMServoDriver.h>
-
 #include <Adafruit_GFX.h>    // Core graphics library
 #include <Adafruit_ST7789.h> // Hardware-specific library for ST7789
 #include <SPI.h>             // Arduino SPI library
 
 #define TFT_CS    -1
-#define TFT_DC    8
-#define TFT_RST   9 
+#define TFT_DC    48
+#define TFT_RST   49
 #define SCR_WD   240
 #define SCR_HT   240
 
-//Arduino_ST7789 tft = Arduino_ST7789(TFT_DC, TFT_RST);
 Adafruit_ST7789 tft = Adafruit_ST7789(TFT_CS, TFT_DC, TFT_RST);
 float p = 3.1415926;
 
@@ -21,18 +19,20 @@ float p = 3.1415926;
 int servoSwitchPin = 2;
 
 int motorPinA = 3;
-int motorPinDirA = 4;
+int motorPinDirA = 12;
+int motorPinBreakA = 9;
 
-int motorPinB = 5;
-int motorPinDirB = 6;
+int motorPinB = 11;
+int motorPinDirB = 13;
+int motorPinBreakB = 8;
 
 int servoDefault = 300;
 int servoMax = 500;
 int servoMin = 100;
 
-int ledRedPin = 7;
-int ledBluePin = 10;
-int ledGreenPin = 12;
+int ledRedPin = 5;
+int ledBluePin = 6;
+int ledGreenPin = 7;
 
 /*
   Servos:
@@ -79,6 +79,8 @@ boolean readSerial() {
     while (Serial.available()) {
       readString += Serial.readStringUntil('\n');
     }
+
+    Serial.println(readString);
     
     err = deserializeJson(doc, readString);
 
@@ -142,7 +144,6 @@ void setServos() {
         servoPositionArray[i] = (int) (servoPositionArray[i] - servoSpeedArray[i]);
       }
     }
-
     if (servoDelayIndex > 0) {
       pwm.setPWM(i, 0, servoPositionArray[i]);
     }
@@ -183,9 +184,9 @@ void setup() {
   tft.setTextColor(ST77XX_WHITE);
   tft.setTextWrap(true);
 
-  tft.setCursor(20, 10);
-  tft.setTextSize(2);
-  tft.print("Start...");
+  // tft.setCursor(20, 10);
+  // tft.setTextSize(2);
+  // tft.print("Start...");
 
   tft.setCursor(20, 50);
   tft.setTextSize(5);
@@ -193,21 +194,19 @@ void setup() {
 
 
   // LED 
-  analogWrite (ledBluePin, 0);  
-  analogWrite (ledGreenPin, 0); 
-  analogWrite (ledRedPin, 255);  
-  delay(500);
-  analogWrite (ledBluePin, 255);
   analogWrite (ledRedPin, 0);  
-  delay(500);
-  analogWrite (ledGreenPin, 255); 
   analogWrite (ledBluePin, 0);  
-  delay(500);
-  analogWrite (ledRedPin, 200);  
-  analogWrite (ledBluePin, 200);  
   analogWrite (ledGreenPin, 200);
+
   delay(500);
-  analogWrite (ledRedPin, 100);  
+
+  analogWrite (ledRedPin, 0);  
+  analogWrite (ledBluePin, 200);  
+  analogWrite (ledGreenPin, 0);
+
+  delay(500);
+
+  analogWrite (ledRedPin, 50);  
   analogWrite (ledBluePin, 0);  
   analogWrite (ledGreenPin, 0);
 
