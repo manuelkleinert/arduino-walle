@@ -247,6 +247,19 @@ void setup() {
   tft.setTextSize(2);
   tft.print("SOLAR CHARGE LEVEL");
 
+  for (int i = 14; i < 20; i++) {
+    tft.drawCircle(60, 85, i, YELLOW);
+  }
+
+  for (int i = 0; i < 8; i++) {
+    if (i < 5) {
+      tft.fillRect(120, (50 + (i * 20)), 110, 10, GREY);
+    } else {
+      tft.fillRect(120, (50 + (i * 20)), 110, 10, YELLOW);
+    }
+  }
+
+  tft.fillRect(120, (50 + (8 * 20)), 110, 20, YELLOW);
 }
 
 void loop() {
