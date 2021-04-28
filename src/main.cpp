@@ -40,6 +40,9 @@ int ledGreenPin = 7;
 int ledGreenBrightness = 50;
 int ledGreenFadeAmount = 1;
 
+int tftUpdateIndex = 0;
+int tftSunFlashIndex = 0;
+
 /*
   Servos:
   0 - Arm R
@@ -168,12 +171,56 @@ void setMotor() {
   }
 }
 
-void ledRed() {
+void setLed() {
    analogWrite(ledRedPin, ledRedBrightness);
   ledRedBrightness = ledRedBrightness + ledRedFadeAmount;
   if (ledRedBrightness <= 20 || ledRedBrightness >= 100) {
     ledRedFadeAmount = -ledRedFadeAmount;
   }
+}
+
+void setTft() {
+  if (tftUpdateIndex%10 == 0) {
+    tft.setTextColor(YELLOW);
+    tft.setTextWrap(true);
+    tft.setCursor(15, 10);
+    tft.setTextSize(2);
+    tft.print("SOLAR CHARGE LEVEL");
+
+    if (tftSunFlashIndex < 10) {
+      for (int i = 0; i < 5; i++) {
+        tft.drawLine(58 + i, 40, 58 + i, 130, YELLOW);
+        tft.drawLine(15, 83 + i, 105, 83 + i, YELLOW);
+      }
+      tft.fillCircle(60, 85, 13, BLACK);
+    } else {
+      tft.fillRect(5, 30, 110, 110, BLACK);
+    }
+
+    for (int i = 14; i < 30; i++) {
+      uint16_t circleColor = i < 20 ? YELLOW : BLACK;
+      tft.drawCircle(60, 85, i, circleColor);
+    }
+
+    tftSunFlashIndex ++;
+
+    if (tftSunFlashIndex > 2) {
+      tftSunFlashIndex = 0;
+    }
+    
+
+    for (int i = 0; i <= 8; i++) {
+      uint16_t lineColor = i < 5 ? GREY : YELLOW;
+      int lineBold = i == 8 ? 15 : 6;  
+      tft.drawFastHLine(122, (50 + (i * 20)), 111, lineColor);
+      tft.drawFastHLine(121, (51 + (i * 20)), 113, lineColor);
+      tft.fillRect(120, (52 + (i * 20)), 115, lineBold, lineColor);
+      tft.drawFastHLine(121, (52 + lineBold + (i * 20)), 113, lineColor);
+      tft.drawFastHLine(122, (53 + lineBold + (i * 20)), 111, lineColor);
+    }
+  }
+  
+  tftUpdateIndex ++;
 }
 
 void setup() {
@@ -232,39 +279,17 @@ void setup() {
   setServos();
   delay(2000);
 
-  tft.fillScreen(WHITE);
-  delay(500);
-  tft.fillScreen(BLACK);
+ 
 
   Serial.println("<Wall-E is ready>");
   Serial.flush();
-
-
-  tft.setTextColor(YELLOW);
-  tft.setTextWrap(true);
-
-  tft.setCursor(15, 10);
-  tft.setTextSize(2);
-  tft.print("SOLAR CHARGE LEVEL");
-
-  for (int i = 14; i < 20; i++) {
-    tft.drawCircle(60, 85, i, YELLOW);
-  }
-
-  for (int i = 0; i < 8; i++) {
-    if (i < 5) {
-      tft.fillRect(120, (50 + (i * 20)), 110, 10, GREY);
-    } else {
-      tft.fillRect(120, (50 + (i * 20)), 110, 10, YELLOW);
-    }
-  }
-
-  tft.fillRect(120, (50 + (8 * 20)), 110, 20, YELLOW);
+  tft.fillScreen(BLACK);
 }
 
 void loop() {
   setServos();
   readSerial();
   setMotor();
-  ledRed();
+  setLed();
+  setTft();
 }
