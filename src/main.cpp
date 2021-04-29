@@ -28,17 +28,17 @@ int servoDefault = 300;
 int servoMax = 500;
 int servoMin = 100;
 
-int ledRedPin = 5;
+int ledRedPin = 43;
 int ledRedBrightness = 50;
 int ledRedFadeAmount = 1;
 
-int ledBluePin = 6;
-int ledBlueBrightness = 50;
-int ledBlueFadeAmount = 1;
-
-int ledGreenPin = 7;
+int ledGreenPin = 45;
 int ledGreenBrightness = 50;
 int ledGreenFadeAmount = 1;
+
+int ledBluePin = 47;
+int ledBlueBrightness = 50;
+int ledBlueFadeAmount = 1;
 
 int tftUpdateIndex = 0;
 int tftSunFlashIndex = 0;
@@ -172,7 +172,7 @@ void setMotor() {
 }
 
 void setLed() {
-   analogWrite(ledRedPin, ledRedBrightness);
+  analogWrite(ledRedPin, ledRedBrightness);
   ledRedBrightness = ledRedBrightness + ledRedFadeAmount;
   if (ledRedBrightness <= 20 || ledRedBrightness >= 100) {
     ledRedFadeAmount = -ledRedFadeAmount;
@@ -238,34 +238,35 @@ void setup() {
   tft.init(240, 240);
   tft.setRotation(4);
   tft.fillScreen(BLACK);
-
   tft.setTextColor(WHITE);
   tft.setTextWrap(true);
-
   tft.setCursor(5, 5);
   tft.setTextSize(2);
   tft.print("load ...");
-
   tft.setCursor(30, 50);
   tft.setTextSize(5);
   tft.print("Wall-E");
 
   // LED 
+  analogWrite (ledRedPin, 200);  
+  analogWrite (ledBluePin, 0);  
+  analogWrite (ledGreenPin, 200);
+
+  delay(1000);
+
   analogWrite (ledRedPin, 0);  
   analogWrite (ledBluePin, 0);  
   analogWrite (ledGreenPin, 200);
 
-  delay(500);
+  delay(1000);
 
   analogWrite (ledRedPin, 0);  
   analogWrite (ledBluePin, 200);  
   analogWrite (ledGreenPin, 0);
 
-  delay(500);
+  delay(1000);
 
-  analogWrite (ledRedPin, 50);  
   analogWrite (ledBluePin, 0);  
-  analogWrite (ledGreenPin, 0);
 
   // Motor direction
   digitalWrite(motorPinDirA, HIGH);
@@ -278,8 +279,6 @@ void setup() {
   delay(500);
   setServos();
   delay(2000);
-
- 
 
   Serial.println("<Wall-E is ready>");
   Serial.flush();
