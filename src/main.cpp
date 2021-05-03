@@ -7,41 +7,28 @@
 #include <Arduino_ST7789_Fast.h>
 #include <VL53L1X.h>
 
-#define TFT_CS    -1
-#define TFT_DC    48
-#define TFT_RST   49
-#define SCR_WD   240
-#define SCR_HT   240
+#define TFT_CS     -1
+#define TFT_DC     48
+#define TFT_RST    49
+#define SCR_WD    240
+#define SCR_HT    240
 
-#define SER_SW    37
+#define SER_SW     37
 
+#define MOT_A       3
+#define MOT_A_DIR  12
+#define MOT_A_BR    9
+#define MOT_B      11
+#define MOT_B_DIR  13
+#define MOT_B_BR    8
 
-int motorPinA = 3;
-int motorPinDirA = 12;
-int motorPinBreakA = 9;
+#define LED_RED     43
+#define LED_GREEN   45
+#define LED_BLUE    47
 
-int motorPinB = 11;
-int motorPinDirB = 13;
-int motorPinBreakB = 8;
+Arduino_ST7789 tft = Arduino_ST7789(TFT_DC, TFT_RST);
+Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver();
 
-int servoDefault = 300;
-int servoMax = 500;
-int servoMin = 100;
-
-int ledRedPin = 43;
-int ledRedBrightness = 200;
-int ledRedFadeAmount = 2;
-
-int ledGreenPin = 45;
-int ledGreenBrightness = 200;
-int ledGreenFadeAmount = 2;
-
-int ledBluePin = 47;
-int ledBlueBrightness = 200;
-int ledBlueFadeAmount = 2;
-
-int tftUpdateIndex = 0;
-int tftSunFlashIndex = 0;
 
 /*
   Servos:
@@ -56,7 +43,6 @@ int tftSunFlashIndex = 0;
   9 - Eye left
 
   12 - Front flap
-
                                      0    1    2    3    4    5    6    7    8    9    10   11   12   13   14   15
 */
 int servoMinArray[16]            = {200, 200, 100, 100, 150, 140, 120, 100, 280, 230, 100, 100, 100, 100, 100, 100};
@@ -72,17 +58,29 @@ int motorDelayIndex = 50;
 int motorDirection[2] = {HIGH, LOW};
 int motorSpeed[2] = {0, 0};
 
-Arduino_ST7789 tft = Arduino_ST7789(TFT_DC, TFT_RST);
-Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver();
-DeserializationError err;
+int servoDefault = 300;
+int servoMax = 500;
+int servoMin = 100;
+
+int ledRedBrightness = 200;
+int ledRedFadeAmount = 2;
+
+int ledGreenBrightness = 0;
+int ledGreenFadeAmount = 2;
+
+int ledBlueBrightness = 0;
+int ledBlueFadeAmount = 2;
+
+int tftUpdateIndex = 0;
+int tftSunFlashIndex = 0;
+
+uint8_t servonum = 0;
 
 DynamicJsonDocument doc(1024);
 String readString;
 
 VL53L1X distFrontLeft;
-
-// our servo # counter
-uint8_t servonum = 0;
+DeserializationError err;
 
 boolean readSerial() {
   if (Serial.available()) {
@@ -102,12 +100,16 @@ boolean readSerial() {
           servoTargetPositionArray[pin] = position ? position : 300;
           servoSpeedArray[pin] = speed ? speed: 1;
           servoDelayIndex = 200;
+
         } else if (doc["dir"]) {
           motorDirection[0] = (int)doc["dir"][0] ? HIGH : LOW;
           motorDirection[1] = (int)doc["dir"][1] ? LOW : HIGH;
           motorSpeed[0] = (int)doc["speed"][0];
           motorSpeed[1] = (int)doc["speed"][1];
           motorDelayIndex = 20;
+
+        } else if (doc["led"]) {
+
         }
 
         return true;
@@ -190,21 +192,21 @@ void setServos() {
 
 void setMotor() {
   if (motorDelayIndex > 0) {
-    digitalWrite(motorPinDirA, motorDirection[0]);
-    digitalWrite(motorPinDirB, motorDirection[1]);
-    analogWrite(motorPinA, motorSpeed[0]);
-    analogWrite(motorPinB, motorSpeed[1]);
+    digitalWrite(MOT_A_DIR, motorDirection[0]);
+    digitalWrite(MOT_B_DIR, motorDirection[1]);
+    analogWrite(MOT_A, motorSpeed[0]);
+    analogWrite(MOT_B, motorSpeed[1]);
     motorDelayIndex --;
     delay(10);
   } else {
-    analogWrite(motorPinA, 0);
-    analogWrite(motorPinB, 0);
+    analogWrite(MOT_A, 0);
+    analogWrite(MOT_B, 0);
     delay(10);
   }
 }
 
 void setLed() {
-  analogWrite(ledRedPin, ledRedBrightness);
+  analogWrite(LED_RED, ledRedBrightness);
   ledRedBrightness = ledRedBrightness + ledRedFadeAmount;
 
   if (ledRedBrightness <= 60 || ledRedBrightness >= 250) {
@@ -258,8 +260,8 @@ void setTft() {
 
 void setup() {
   pinMode(SER_SW, OUTPUT);
-  pinMode(motorPinDirA, OUTPUT);
-  pinMode(motorPinDirB, OUTPUT);
+  pinMode(MOT_A_DIR, OUTPUT);
+  pinMode(MOT_B_DIR, OUTPUT);
   
   Serial.begin(115200);
   Serial.setTimeout(100);
@@ -295,32 +297,12 @@ void setup() {
   tft.print("Wall-E");
 
   // LED 
-  analogWrite (ledRedPin, 200);  
-  analogWrite (ledBluePin, 0);  
-  analogWrite (ledGreenPin, 0);
-
+  analogWrite (LED_RED, 0);  
+  analogWrite (LED_BLUE, 200);  
+  analogWrite (LED_GREEN, 0);
   delay(500);
-
-  analogWrite (ledRedPin, 0);  
-  analogWrite (ledBluePin, 0);  
-  analogWrite (ledGreenPin, 200);
-
-  delay(500);
-
-  analogWrite (ledRedPin, 0);  
-  analogWrite (ledBluePin, 200);  
-  analogWrite (ledGreenPin, 0);
-
-  delay(500);
-
-  analogWrite (ledBluePin, 0);  
-
-  delay(500);
-
-  // Motor direction
-  digitalWrite(motorPinDirA, HIGH);
-  digitalWrite(motorPinDirB, LOW);
-
+  
+  // Servo
   pwm.begin();
   pwm.setOscillatorFrequency(27000000);
   pwm.setPWMFreq(50);
