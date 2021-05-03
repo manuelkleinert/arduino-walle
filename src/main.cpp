@@ -197,6 +197,9 @@ void setMotor() {
     analogWrite(MOT_A, motorSpeed[0]);
     analogWrite(MOT_B, motorSpeed[1]);
     motorDelayIndex --;
+
+    Serial.println(String(distFrontLeft.read()));
+
     delay(10);
   } else {
     analogWrite(MOT_A, 0);
@@ -322,6 +325,4 @@ void loop() {
   setMotor();
   setLed();
   setTft();
-
-  Serial.println(String(distFrontLeft.read()));
 }
