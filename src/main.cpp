@@ -5,6 +5,7 @@
 #include <Adafruit_PWMServoDriver.h>
 #include <Adafruit_GFX.h>
 #include <Arduino_ST7789_Fast.h>
+#include <VL53L1X.h>
 
 #define TFT_CS    -1
 #define TFT_DC    48
@@ -12,9 +13,8 @@
 #define SCR_WD   240
 #define SCR_HT   240
 
-Arduino_ST7789 tft = Arduino_ST7789(TFT_DC, TFT_RST);
+#define SER_SW    37
 
-int servoSwitchPin = 2;
 
 int motorPinA = 3;
 int motorPinDirA = 12;
@@ -29,16 +29,16 @@ int servoMax = 500;
 int servoMin = 100;
 
 int ledRedPin = 43;
-int ledRedBrightness = 50;
-int ledRedFadeAmount = 1;
+int ledRedBrightness = 200;
+int ledRedFadeAmount = 2;
 
 int ledGreenPin = 45;
-int ledGreenBrightness = 50;
-int ledGreenFadeAmount = 1;
+int ledGreenBrightness = 200;
+int ledGreenFadeAmount = 2;
 
 int ledBluePin = 47;
-int ledBlueBrightness = 50;
-int ledBlueFadeAmount = 1;
+int ledBlueBrightness = 200;
+int ledBlueFadeAmount = 2;
 
 int tftUpdateIndex = 0;
 int tftSunFlashIndex = 0;
@@ -72,11 +72,14 @@ int motorDelayIndex = 50;
 int motorDirection[2] = {HIGH, LOW};
 int motorSpeed[2] = {0, 0};
 
+Arduino_ST7789 tft = Arduino_ST7789(TFT_DC, TFT_RST);
 Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver();
 DeserializationError err;
 
 DynamicJsonDocument doc(1024);
 String readString;
+
+VL53L1X distFrontLeft;
 
 // our servo # counter
 uint8_t servonum = 0;
@@ -92,7 +95,6 @@ boolean readSerial() {
 
     switch (err.code()) {
       case DeserializationError::Ok:
-
         if (doc["pin"] != "" && doc["pos"]) {
           int pin = (int)doc["pin"];
           int position = (int)doc["pos"];
@@ -128,12 +130,42 @@ boolean readSerial() {
   return false;
 }
 
+
+void l2cScanner() {
+  byte error, address;
+  int nDevices;
+ 
+  Serial.println("Scanning...");
+ 
+  nDevices = 0;
+  for(address = 1; address < 127; address++ ) {
+    Wire.beginTransmission(address);
+    error = Wire.endTransmission();
+
+    if (error == 0) {
+      Serial.print("I2C device found at address 0x");
+      Serial.print(address < 16 ? "0" : "");
+      Serial.println(address, HEX);
+      nDevices++;
+    }
+    else if (error==4)
+    {
+      Serial.print("Unknown error at address 0x");
+      Serial.print(address < 16 ? "0" : "");
+      Serial.println(address,HEX);
+    }    
+  }
+  Serial.println(nDevices == 0 ? "No I2C devices found\n" : "done\n");
+ 
+  delay(1000); 
+}
+
 void switchServos() {
   if (servoDelayIndex > 0) {
     servoDelayIndex --;
-    digitalWrite(servoSwitchPin, HIGH);    
+    digitalWrite(SER_SW, HIGH);    
   } else {
-    digitalWrite(servoSwitchPin, LOW);
+    digitalWrite(SER_SW, LOW);
   }
 }
 
@@ -174,7 +206,8 @@ void setMotor() {
 void setLed() {
   analogWrite(ledRedPin, ledRedBrightness);
   ledRedBrightness = ledRedBrightness + ledRedFadeAmount;
-  if (ledRedBrightness <= 20 || ledRedBrightness >= 100) {
+
+  if (ledRedBrightness <= 60 || ledRedBrightness >= 250) {
     ledRedFadeAmount = -ledRedFadeAmount;
   }
 }
@@ -224,17 +257,31 @@ void setTft() {
 }
 
 void setup() {
-
-  pinMode(servoSwitchPin, OUTPUT);
+  pinMode(SER_SW, OUTPUT);
   pinMode(motorPinDirA, OUTPUT);
   pinMode(motorPinDirB, OUTPUT);
   
   Serial.begin(115200);
   Serial.setTimeout(100);
-
   while (!Serial) continue;
 
-    // Display
+  Wire.begin();
+  Wire.setClock(400000);
+
+  l2cScanner();
+
+  distFrontLeft.setTimeout(500);
+  if (!distFrontLeft.init())
+  {
+    Serial.println("Failed to detect and initialize sensor!");
+    while (1);
+  }
+  
+  distFrontLeft.setDistanceMode(VL53L1X::Long);
+  distFrontLeft.setMeasurementTimingBudget(15000);
+  distFrontLeft.startContinuous(15);
+
+  // Display
   tft.init(240, 240);
   tft.setRotation(4);
   tft.fillScreen(BLACK);
@@ -250,23 +297,25 @@ void setup() {
   // LED 
   analogWrite (ledRedPin, 200);  
   analogWrite (ledBluePin, 0);  
-  analogWrite (ledGreenPin, 200);
+  analogWrite (ledGreenPin, 0);
 
-  delay(1000);
+  delay(500);
 
   analogWrite (ledRedPin, 0);  
   analogWrite (ledBluePin, 0);  
   analogWrite (ledGreenPin, 200);
 
-  delay(1000);
+  delay(500);
 
   analogWrite (ledRedPin, 0);  
   analogWrite (ledBluePin, 200);  
   analogWrite (ledGreenPin, 0);
 
-  delay(1000);
+  delay(500);
 
   analogWrite (ledBluePin, 0);  
+
+  delay(500);
 
   // Motor direction
   digitalWrite(motorPinDirA, HIGH);
@@ -291,4 +340,6 @@ void loop() {
   setMotor();
   setLed();
   setTft();
+
+  Serial.println(String(distFrontLeft.read()));
 }
