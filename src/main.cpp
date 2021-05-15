@@ -212,8 +212,10 @@ void setLed() {
   analogWrite(LED_RED, ledRedBrightness);
   ledRedBrightness = ledRedBrightness + ledRedFadeAmount;
 
-  if (ledRedBrightness <= 60 || ledRedBrightness >= 250) {
+  if (ledRedBrightness <= 100 || ledRedBrightness >= 250) {
     ledRedFadeAmount = -ledRedFadeAmount;
+  } else {
+    ledRedFadeAmount = ledRedFadeAmount;
   }
 }
 
@@ -227,17 +229,27 @@ void setTft() {
 
     if (tftSunFlashIndex < 10) {
       for (int i = 0; i < 5; i++) {
-        tft.drawLine(58 + i, 40, 58 + i, 130, YELLOW);
-        tft.drawLine(15, 83 + i, 105, 83 + i, YELLOW);
+        //              x     y     x     y
+        tft.drawLine(58 + i, 45, 58 + i, 60, YELLOW); // Top
+        tft.drawLine(58 + i, 110, 58 + i, 125, YELLOW); // Bottom
+
+        tft.drawLine(80 + i, 50, 72 + i, 63, YELLOW); // Top first right
+        tft.drawLine(94 + i, 64 + (i/2), 81 + i, 72 + (i/2), YELLOW); // Top second right
+
+        tft.drawLine(38 + i, 50, 46 + i, 63, YELLOW); // Top first left
+        tft.drawLine(24 + i, 64 + (i/2), 37 + i, 72 + (i/2), YELLOW); // Top second left
+
+        tft.drawLine(20, 83 + i, 35, 83 + i, YELLOW);
+        tft.drawLine(85, 83 + i, 100, 83 + i, YELLOW);
+
+
+
+
       }
-      tft.fillCircle(60, 85, 13, BLACK);
-    } else {
-      tft.fillRect(5, 30, 110, 110, BLACK);
     }
 
-    for (int i = 14; i < 30; i++) {
-      uint16_t circleColor = i < 20 ? YELLOW : BLACK;
-      tft.drawCircle(60, 85, i, circleColor);
+    for (int i = 13; i < 20; i++) {
+      tft.drawCircle(60, 85, i, YELLOW);
     }
 
     tftSunFlashIndex ++;
@@ -304,6 +316,7 @@ void setup() {
   analogWrite (LED_BLUE, 200);  
   analogWrite (LED_GREEN, 0);
   delay(500);
+  analogWrite (LED_BLUE, 0); 
   
   // Servo
   pwm.begin();
