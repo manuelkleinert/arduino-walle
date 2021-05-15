@@ -22,9 +22,9 @@
 #define MOT_B_DIR  13
 #define MOT_B_BR    8
 
-#define LED_RED     43
-#define LED_GREEN   45
-#define LED_BLUE    47
+#define LED_RED     44
+#define LED_GREEN   45                                     
+#define LED_BLUE    46
 
 Arduino_ST7789 tft = Arduino_ST7789(TFT_DC, TFT_RST);
 Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver();
@@ -211,11 +211,8 @@ void setMotor() {
 void setLed() {
   analogWrite(LED_RED, ledRedBrightness);
   ledRedBrightness = ledRedBrightness + ledRedFadeAmount;
-
-  if (ledRedBrightness <= 100 || ledRedBrightness >= 250) {
+  if (ledRedBrightness <= 50 || ledRedBrightness >= 250) {
     ledRedFadeAmount = -ledRedFadeAmount;
-  } else {
-    ledRedFadeAmount = ledRedFadeAmount;
   }
 }
 
@@ -225,7 +222,7 @@ void setTft() {
     tft.setTextWrap(true);
     tft.setCursor(15, 10);
     tft.setTextSize(2);
-    tft.print("SOLAR CHARGE LEVEL");
+    tft.println("SOLAR CHARGE LEVEL");
 
     if (tftSunFlashIndex < 10) {
       for (int i = 0; i < 5; i++) {
@@ -241,10 +238,6 @@ void setTft() {
 
         tft.drawLine(20, 83 + i, 35, 83 + i, YELLOW);
         tft.drawLine(85, 83 + i, 100, 83 + i, YELLOW);
-
-
-
-
       }
     }
 
@@ -277,6 +270,10 @@ void setup() {
   pinMode(SER_SW, OUTPUT);
   pinMode(MOT_A_DIR, OUTPUT);
   pinMode(MOT_B_DIR, OUTPUT);
+
+  pinMode(LED_RED, OUTPUT);
+  pinMode(LED_GREEN, OUTPUT);
+  pinMode(LED_BLUE, OUTPUT);
   
   Serial.begin(115200);
   Serial.setTimeout(100);
